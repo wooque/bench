@@ -1,0 +1,7 @@
+.idea
+virtualenv
+*.pyc
+target
+.lein-repl-history
+go
+!go/src/test-go/bench.go
