@@ -3,7 +3,8 @@
             [cheshire.core :refer :all]
             [clojure.java.jdbc :as jdbc] 
             [hikari-cp.core :refer :all]
-            [org.httpkit.server :refer :all])
+            [org.httpkit.server :refer :all]
+            [clojure.core.async :refer [chan go >! <!!]])
   (:gen-class))
   
 (set! *warn-on-reflection* true)
@@ -20,7 +21,7 @@
 (defn query-data []
   (jdbc/with-db-connection [conn {:datasource datasource}]
     (let [rows (jdbc/query conn "SELECT txt FROM tst LIMIT 1")]
-      (first rows))))
+      (or (first rows) {:txt nil}))))
       
 (defn insert-data []
   (jdbc/with-db-connection [conn {:datasource datasource}]
@@ -37,28 +38,32 @@
 (defn delete-data []
   (jdbc/with-db-connection [conn {:datasource datasource}]
     (let [rows (jdbc/query conn "DELETE FROM tst WHERE id in (SELECT id FROM tst LIMIT 1) RETURNING id")]
-      (first rows))))      
-      
-(defn work []
-  (let [coin (rand-int 4)]
-    (condp = coin
-      0 (query-data)
-      1 (insert-data)
-      2 (update-data)
-      3 (delete-data)
-      {:error "error"})))
+      (or (first rows) {:id nil}))))
+
+(defn work [c]
+  (go (>! c 
+    (let [coin (rand-int 4)]
+      (condp = coin
+        0 (query-data)
+        1 (insert-data)
+        2 (update-data)
+        3 (delete-data)
+        {:error "error"})))))
 
 (defn handler [req]
-  {:status 200
-   :headers {"Content-Type" "application/json"}
-   :body (generate-string (work))})
+  (let [c (chan)]
+    (work c)
+    {:status 200
+     :headers {"Content-Type" "application/json"}
+     :body (generate-string (<!! c))}))
 
 (defn async-handler [req]
-  (with-channel req channel 
+  (with-channel req channel   
+    (let [c (chan)]
+      (work c)
       (send! channel {:status 200
                       :headers {"Content-Type" "application/json"}
-                      :body    (generate-string (work))})))
-
+                      :body    (generate-string (<!! c))}))))
 
 (def routes {"/" handler 
              "/async" async-handler})
