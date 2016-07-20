@@ -4,9 +4,9 @@
                  [org.clojure/java.jdbc "0.6.1"]
                  [hikari-cp "1.7.2"]
                  [danlentz/clj-uuid "0.1.6"]
+                 [cheshire "5.6.3"]
                  [http-kit "2.2.0"]]
-  
-  :global-vars {*warn-on-reflection* true}
+                 
   :main bench.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

@@ -1,9 +1,12 @@
 (ns bench.core
-  (:require [clj-uuid :as uuid] 
+  (:require [clj-uuid :as uuid]
+            [cheshire.core :refer :all]
             [clojure.java.jdbc :as jdbc] 
             [hikari-cp.core :refer :all]
             [org.httpkit.server :refer :all])
   (:gen-class))
+  
+(set! *warn-on-reflection* true)
    
 (def datasource-options {:adapter            "postgresql"
                          :username           "bench"
@@ -14,22 +17,47 @@
 (def datasource
   (make-datasource datasource-options))
 
-(defn get-data []
+(defn query-data []
   (jdbc/with-db-connection [conn {:datasource datasource}]
-    (let [rows (jdbc/query conn "SELECT * FROM tst")]
-      (println rows)))
-  (close-datasource datasource))
+    (let [rows (jdbc/query conn "SELECT txt FROM tst LIMIT 1")]
+      (first rows))))
+      
+(defn insert-data []
+  (jdbc/with-db-connection [conn {:datasource datasource}]
+    (let [data {:txt (str (uuid/v1))}]
+      (jdbc/insert! conn :tst data)
+      data)))
+      
+(defn update-data []
+  (jdbc/with-db-connection [conn {:datasource datasource}]
+    (let [data (str (uuid/v1))]
+      (jdbc/execute! conn ["UPDATE tst SET txt=? WHERE id in (SELECT id FROM tst LIMIT 1)" data])
+      {:txt data})))
+
+(defn delete-data []
+  (jdbc/with-db-connection [conn {:datasource datasource}]
+    (let [rows (jdbc/query conn "DELETE FROM tst WHERE id in (SELECT id FROM tst LIMIT 1) RETURNING id")]
+      (first rows))))      
+      
+(defn work []
+  (let [coin (rand-int 4)]
+    (condp = coin
+      0 (query-data)
+      1 (insert-data)
+      2 (update-data)
+      3 (delete-data)
+      {:error "error"})))
 
 (defn handler [req]
   {:status 200
-   :headers {"Content-Type" "text/plain"}
-   :body "Hello World!"})
+   :headers {"Content-Type" "application/json"}
+   :body (generate-string (work))})
 
 (defn async-handler [req]
   (with-channel req channel 
       (send! channel {:status 200
-                      :headers {"Content-Type" "text/plain"}
-                      :body    "Hello World!"})))
+                      :headers {"Content-Type" "application/json"}
+                      :body    (generate-string (work))})))
 
 
 (def routes {"/" handler 
