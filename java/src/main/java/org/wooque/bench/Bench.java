@@ -6,13 +6,11 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
-import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 
 public class Bench extends AbstractVerticle
-{ 
-
-  public JDBCClient db;
+{
+  private JDBCClient db;
 
   @Override
   public void start() {
