@@ -18,7 +18,7 @@ public class Bench extends AbstractVerticle {
     @Override
     public void start() {
         db = JDBCClient.createShared(vertx, new JsonObject()
-                .put("url", "jdbc:postgresql:bench?user=bench&bench=secret")
+                .put("url", "jdbc:postgresql://127.0.0.1/bench?user=bench&password=bench")
                 .put("driver_class", "org.postgresql.Driver")
                 .put("max_pool_size", 128));
 
