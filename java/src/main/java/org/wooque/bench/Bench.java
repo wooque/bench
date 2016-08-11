@@ -73,6 +73,7 @@ public class Bench extends AbstractVerticle {
                     });
                     break;
                 default:
+                    connection.close();
                     data = new JsonObject().put("error", "Wrong coin").toString();
                     r.response().end(data);
             }
