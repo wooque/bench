@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	db, _ := sql.Open("postgres", "user=bench dbname=bench sslmode=disable")
+	db, _ := sql.Open("postgres", "dbname=bench user=bench password=bench sslmode=disable")
 	defer db.Close()
 	rand.Seed(time.Now().UTC().UnixNano())
 
