@@ -2,8 +2,9 @@ from uuid import uuid1
 from random import randint
 from twisted.internet import reactor
 from twisted.internet.defer import inlineCallbacks
-from twisted.enterprise import adbapi
+from txpostgres import txpostgres
 from cyclone.web import Application, RequestHandler
+from twisted.python import log
 
 reactor.suggestThreadPoolSize(128)
 
@@ -43,8 +44,11 @@ class BenchEndpoint(RequestHandler):
 
 class Bench(Application):
     def __init__(self):
-        self.db_pool = adbapi.ConnectionPool("psycopg2", host="127.0.0.1", database="bench",
-                                             user="bench", password="bench", cp_max=32, cp_reconnect=True)
+        self.db_pool = txpostgres.ConnectionPool("psycopg2", host="127.0.0.1", database="bench", 
+                                                 user="bench", password="bench", min=32)
+
+        d = self.db_pool.start()
+        d.addCallback(lambda _: log.msg("DB connected"))
 
         handlers = [
             (r"/bench", BenchEndpoint, dict(db=self.db_pool)),
