@@ -7,6 +7,7 @@ from cyclone.web import Application, RequestHandler
 
 reactor.suggestThreadPoolSize(128)
 
+
 class BenchEndpoint(RequestHandler):
     def initialize(self, db=None):
         self.db = db
