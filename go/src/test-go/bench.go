@@ -13,7 +13,8 @@ import (
 
 func main() {
 	db, _ := sql.Open("postgres", "dbname=bench user=bench password=bench sslmode=disable")
-	defer db.Close()
+	db.SetMaxOpenConns(32)
+    defer db.Close()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	http.HandleFunc("/bench", func(w http.ResponseWriter, req *http.Request) {
