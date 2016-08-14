@@ -7,5 +7,6 @@ target
 .lein-repl-history
 go
 !go/src/test-go/bench.go
+!go/src/test-go/bench_fasthttp.go
 node_modules
 *.iml
