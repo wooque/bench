@@ -14,7 +14,7 @@
                          :password           "bench"
                          :database-name      "bench"
                          :server-name        "127.0.0.1"
-                         :maximum-pool-size  128})
+                         :maximum-pool-size  32})
 
 (def datasource
   (make-datasource datasource-options))
@@ -42,13 +42,13 @@
       (or (first rows) {:id nil}))))
 
 (defn work []
-  (let [coin (rand-int 4)]
-    (condp = coin
-      0 (query-data)
-      1 (insert-data)
-      2 (update-data)
-      3 (delete-data)
-      {:error "error"})))
+  (let [coin (rand-int 10)]
+    (cond
+      (< coin 5) (query-data)
+      (< coin 7) (insert-data)
+      (< coin 9) (update-data)
+      (= coin 9) (delete-data)
+      :else {:error "error"})))
 
 (defn handler [req]
   {:status 200
