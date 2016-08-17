@@ -15,8 +15,8 @@ class BenchEndpoint(RequestHandler):
 
     @inlineCallbacks
     def get(self):
-        coin = randint(0, 3)
-        if coin == 0:
+        coin = randint(0, 9)
+        if coin < 5:
             result = yield self.db.runQuery("SELECT txt FROM tst LIMIT 1")
             if not result:
                 resp = None
@@ -24,12 +24,12 @@ class BenchEndpoint(RequestHandler):
                 resp = result[0][0]
             self.write(dict(txt=resp))
 
-        elif coin == 1:
+        elif coin < 7:
             txt = str(uuid1())
             yield self.db.runOperation("INSERT INTO tst(txt) VALUES (%s)", (txt,))
             self.write(dict(txt=txt))
 
-        elif coin == 2:
+        elif coin < 9:
             txt = str(uuid1())
             yield self.db.runOperation("UPDATE tst SET txt=%s WHERE id in (SELECT id FROM tst LIMIT 1)", (txt,))
             self.write(dict(txt=txt))

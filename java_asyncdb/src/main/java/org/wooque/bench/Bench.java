@@ -28,10 +28,9 @@ public class Bench extends AbstractVerticle {
         vertx.createHttpServer().requestHandler(r -> db.getConnection(conn -> {
             final SQLConnection connection = conn.result();
 
-            int coin = ThreadLocalRandom.current().nextInt(0, 4);
+            int coin = ThreadLocalRandom.current().nextInt(0, 10);
             String data;
-            switch (coin) {
-                case 0:
+            if (coin < 5) {
                     connection.query("SELECT txt FROM tst LIMIT 1", rs -> {
                         List rows = rs.result().getRows();
                         String resp;
@@ -43,8 +42,8 @@ public class Bench extends AbstractVerticle {
                         connection.close();
                         r.response().end(resp);
                     });
-                    break;
-                case 1:
+
+            } else if (coin < 7) {
                     data = UUID.randomUUID().toString();
                     connection.updateWithParams("INSERT INTO tst(txt) VALUES (?)", new JsonArray().add(data), rs -> {
                         rs.result();
@@ -52,8 +51,8 @@ public class Bench extends AbstractVerticle {
                         String resp = new JsonObject().put("txt", data).toString();
                         r.response().end(resp);
                     });
-                    break;
-                case 2:
+                
+            } else if (coin < 9) {
                     data = UUID.randomUUID().toString();
                     connection.updateWithParams("UPDATE tst SET txt=? WHERE id=(SELECT id FROM tst LIMIT 1)", new JsonArray().add(data), rs -> {
                         rs.result();
@@ -61,8 +60,8 @@ public class Bench extends AbstractVerticle {
                         String resp = new JsonObject().put("txt", data).toString();
                         r.response().end(resp);
                     });
-                    break;
-                case 3:
+                
+            } else if (coin == 9) {
                     connection.query("DELETE FROM tst WHERE id=(SELECT id FROM tst LIMIT 1) RETURNING id", rs -> {
                         List rows = rs.result().getRows();
                         String resp;
@@ -74,8 +73,8 @@ public class Bench extends AbstractVerticle {
                         connection.close();
                         r.response().end(resp);
                     });
-                    break;
-                default:
+
+            } else {
                     connection.close();
                     data = new JsonObject().put("error", "Wrong coin").toString();
                     r.response().end(data);

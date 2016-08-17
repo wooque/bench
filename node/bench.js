@@ -59,14 +59,14 @@ function response(resp, data) {
 }
 
 function handler(req, res) {
-  var coin = randint(0, 3);
-  if (coin == 0) {
+  var coin = randint(0, 9);
+  if (coin < 5) {
     query(function(data) { response(res, data); });
-  } else if (coin == 1) {
+  } else if (coin < 7) {
     insert(function(data) { response(res, data); });
-  } else if (coin == 2) {
+  } else if (coin < 9) {
     update(function(data) { response(res, data); });
-  } else if (coin == 3) {
+  } else if (coin == 9) {
     delet(function(data) { response(res, data); });
   } else {
     response(res, {error: "Wrong coin"});

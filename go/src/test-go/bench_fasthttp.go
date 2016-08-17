@@ -19,8 +19,8 @@ func main() {
 
 	fasthttp.ListenAndServe(":8080", func(ctx *fasthttp.RequestCtx) {
 		var resp map[string]string
-		coin := rand.Intn(4)
-		if coin == 0 {
+		coin := rand.Intn(10)
+		if coin < 5 {
 			var res string
 			err := db.QueryRow("SELECT txt FROM tst LIMIT 1").Scan(&res)
 			if err != nil {
@@ -28,12 +28,12 @@ func main() {
 			}
 			resp = map[string]string{"txt": res}
 
-		} else if coin == 1 {
+		} else if coin < 7 {
 			txt := uuid.NewV1().String()
 			db.Exec("INSERT INTO tst(txt) VALUES ($1)", txt)
 			resp = map[string]string{"txt": txt}
 
-		} else if coin == 2 {
+		} else if coin < 9 {
 			txt := uuid.NewV1().String()
 			db.Exec("UPDATE tst SET txt=$1 WHERE id in (SELECT id FROM tst LIMIT 1)", txt)
 			resp = map[string]string{"txt": txt}
