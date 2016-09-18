@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	_ "github.com/lib/pq"
 	"github.com/satori/go.uuid"
 	"math/rand"
@@ -18,36 +17,24 @@ func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	http.HandleFunc("/bench", func(w http.ResponseWriter, req *http.Request) {
-		var resp map[string]string
+		var txt string
 		coin := rand.Intn(10)
-		if coin < 5 {
-			var res string
-			err := db.QueryRow("SELECT txt FROM tst LIMIT 1").Scan(&res)
+		if coin < 8 {
+			err := db.QueryRow("SELECT txt FROM tst LIMIT 1").Scan(&txt)
 			if err != nil {
-				res = ""
+				txt = ""
 			}
-			resp = map[string]string{"txt": res}
-
-		} else if coin < 7 {
-			txt := uuid.NewV1().String()
-			db.Exec("INSERT INTO tst(txt) VALUES ($1)", txt)
-			resp = map[string]string{"txt": txt}
 
 		} else if coin < 9 {
-			txt := uuid.NewV1().String()
-			db.Exec("UPDATE tst SET txt=$1 WHERE id in (SELECT id FROM tst LIMIT 1)", txt)
-			resp = map[string]string{"txt": txt}
+			txt = uuid.NewV1().String()
+			db.Exec("INSERT INTO tst(txt) VALUES ($1)", txt)
 
 		} else {
-			var res string
-			err := db.QueryRow("DELETE FROM tst WHERE id in (SELECT id FROM tst LIMIT 1) RETURNING id").Scan(&res)
-			if err != nil {
-				res = ""
-			}
-			resp = map[string]string{"id": res}
+			txt = uuid.NewV1().String()
+			db.Exec("UPDATE tst SET txt=$1 WHERE id in (SELECT id FROM tst LIMIT 1)", txt)
 		}
-		json_resp, _ := json.Marshal(resp)
-		fmt.Fprintln(w, string(json_resp))
+        json_resp, _ := json.Marshal(map[string]string{"txt": txt})
+		w.Write(json_resp)
 	})
 	http.ListenAndServe(":8080", nil)
 }

@@ -36,19 +36,12 @@
       (jdbc/execute! conn ["UPDATE tst SET txt=? WHERE id in (SELECT id FROM tst LIMIT 1)" data])
       {:txt data})))
 
-(defn delete-data []
-  (jdbc/with-db-connection [conn {:datasource datasource}]
-    (let [rows (jdbc/query conn "DELETE FROM tst WHERE id in (SELECT id FROM tst LIMIT 1) RETURNING id")]
-      (or (first rows) {:id nil}))))
-
 (defn work []
   (let [coin (rand-int 10)]
     (cond
-      (< coin 5) (query-data)
-      (< coin 7) (insert-data)
-      (< coin 9) (update-data)
-      (= coin 9) (delete-data)
-      :else {:error "error"})))
+      (< coin 8) (query-data)
+      (< coin 9) (insert-data)
+      :else (update-data))))
 
 (defn handler [req]
   {:status 200

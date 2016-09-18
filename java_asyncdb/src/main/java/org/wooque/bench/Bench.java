@@ -30,7 +30,7 @@ public class Bench extends AbstractVerticle {
 
             int coin = ThreadLocalRandom.current().nextInt(0, 10);
             String data;
-            if (coin < 5) {
+            if (coin < 8) {
                     connection.query("SELECT txt FROM tst LIMIT 1", rs -> {
                         List rows = rs.result().getRows();
                         String resp;
@@ -43,7 +43,7 @@ public class Bench extends AbstractVerticle {
                         r.response().end(resp);
                     });
 
-            } else if (coin < 7) {
+            } else if (coin < 9) {
                     data = UUID.randomUUID().toString();
                     connection.updateWithParams("INSERT INTO tst(txt) VALUES (?)", new JsonArray().add(data), rs -> {
                         rs.result();
@@ -52,7 +52,7 @@ public class Bench extends AbstractVerticle {
                         r.response().end(resp);
                     });
                 
-            } else if (coin < 9) {
+            } else {
                     data = UUID.randomUUID().toString();
                     connection.updateWithParams("UPDATE tst SET txt=? WHERE id=(SELECT id FROM tst LIMIT 1)", new JsonArray().add(data), rs -> {
                         rs.result();
@@ -60,24 +60,6 @@ public class Bench extends AbstractVerticle {
                         String resp = new JsonObject().put("txt", data).toString();
                         r.response().end(resp);
                     });
-                
-            } else if (coin == 9) {
-                    connection.query("DELETE FROM tst WHERE id=(SELECT id FROM tst LIMIT 1) RETURNING id", rs -> {
-                        List rows = rs.result().getRows();
-                        String resp;
-                        if (rows.size() > 0) {
-                            resp = rows.get(0).toString();
-                        } else {
-                            resp = new JsonObject().put("id", "").toString();
-                        }
-                        connection.close();
-                        r.response().end(resp);
-                    });
-
-            } else {
-                    connection.close();
-                    data = new JsonObject().put("error", "Wrong coin").toString();
-                    r.response().end(data);
             }
         })).listen(8080);
     }

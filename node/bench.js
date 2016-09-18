@@ -44,15 +44,6 @@ function update(callback) {
   });
 }
 
-function delet(callback) {
-  pool.connect(function(err, client, done) {
-    client.query('DELETE FROM tst WHERE id in (SELECT id FROM tst LIMIT 1) RETURNING id', [], function(err, result) {
-      done();
-      callback(result.rows[0]);
-    });
-  });
-}
-
 function response(resp, data) {
   resp.writeHead(200, {'Content-Type': 'application/json'});
   resp.end(JSON.stringify(data));
@@ -60,16 +51,12 @@ function response(resp, data) {
 
 function handler(req, res) {
   var coin = randint(0, 9);
-  if (coin < 5) {
+  if (coin < 8) {
     query(function(data) { response(res, data); });
-  } else if (coin < 7) {
-    insert(function(data) { response(res, data); });
   } else if (coin < 9) {
-    update(function(data) { response(res, data); });
-  } else if (coin == 9) {
-    delet(function(data) { response(res, data); });
+    insert(function(data) { response(res, data); });
   } else {
-    response(res, {error: "Wrong coin"});
+    update(function(data) { response(res, data); });
   }
 }
 

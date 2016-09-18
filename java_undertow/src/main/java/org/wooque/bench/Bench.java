@@ -38,8 +38,7 @@ public class Bench {
                         String data;
                         PreparedStatement stmt;
                         ResultSet rs;
-                        HashMap<String, String> resp;
-                        if (coin < 5) {
+                        if (coin < 8) {
                                 stmt = conn.prepareStatement("SELECT txt FROM tst LIMIT 1");
                                 rs = stmt.executeQuery();
                                 if (rs.next()) {
@@ -47,40 +46,21 @@ public class Bench {
                                 } else {
                                     data = "";
                                 }
-                                resp = new HashMap<>();
-                                resp.put("txt", data);
 
                         } else if (coin < 7) {
                                 data = UUID.randomUUID().toString();
                                 stmt = conn.prepareStatement("INSERT INTO tst(txt) VALUES (?)");
                                 stmt.setString(1, data);
                                 stmt.executeUpdate();
-                                resp = new HashMap<>();
-                                resp.put("txt", data);
 
-                        } else if (coin < 9) {
+                        } else {
                                 data = UUID.randomUUID().toString();
                                 stmt = conn.prepareStatement("UPDATE tst SET txt=? WHERE id=(SELECT id FROM tst LIMIT 1)");
                                 stmt.setString(1, data);
                                 stmt.executeUpdate();
-                                resp = new HashMap<>();
-                                resp.put("txt", data);
-
-                        } else if (coin == 9) {
-                                stmt = conn.prepareStatement("DELETE FROM tst WHERE id=(SELECT id FROM tst LIMIT 1) RETURNING id");
-                                rs = stmt.executeQuery();
-                                if (rs.next()) {
-                                    data = rs.getString(1);
-                                } else {
-                                    data = "";
-                                }
-                                resp = new HashMap<>();
-                                resp.put("id", data);
-                        
-                        } else {
-                                resp = new HashMap<>();
-                                resp.put("error", "Wrong coin");
                         }
+                        HashMap<String, String> resp = new HashMap<>();
+                        resp.put("txt", data);
 
                         conn.close();
                         data = new Gson().toJson(resp);
@@ -88,7 +68,7 @@ public class Bench {
                         exchange.getResponseSender().send(data);
                     }
                 })
-                .setWorkerThreads(128)
+                .setWorkerThreads(200)
                 .build();
         server.start();
     }
