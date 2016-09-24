@@ -24,7 +24,7 @@ func main() {
 				txt = ""
 			}
 
-		} else if coin < 8 {
+		} else if coin < 9 {
 			txt = uuid.NewV1().String()
 			db.Exec("INSERT INTO tst(txt) VALUES ($1)", txt)
 
