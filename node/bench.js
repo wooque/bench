@@ -54,7 +54,7 @@ function update(callback) {
     var thumb = randStr(140);
     var nc = randInt(1000);
     var nv = randInt(5000);
-    client.query('UPDATE tst SET title=$1, thumb=$2, nv=$3, nv=$4 FROM (SELECT id FROM tst ORDER BY RANDOM() LIMIT 1) as tmp WHERE tst.id=tmp.id', 
+    client.query('UPDATE tst SET title=$1, thumb=$2, nc=$3, nv=$4 FROM (SELECT id FROM tst ORDER BY RANDOM() LIMIT 1) as tmp WHERE tst.id=tmp.id', 
         [title, thumb, nc, nv], 
         function(err, result) {
             done();
