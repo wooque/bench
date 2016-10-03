@@ -1,6 +1,5 @@
 var http = require('http');
 var pg = require('pg').native;
-var uuid = require('node-uuid');
 
 var config = {
   user: 'bench',
@@ -11,37 +10,57 @@ var config = {
 
 var pool = new pg.Pool(config);
 
-function randint(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+function randInt(max) {
+  return Math.floor(Math.random() * (max + 1));
+}
+
+function randStr(length) {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for(var i=0; i < length; i++)
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
 }
 
 function query(callback) {
   pool.connect(function(err, client, done) {
-    client.query('SELECT txt FROM tst LIMIT 1', [], function(err, result) {
+    client.query('SELECT * FROM tst LIMIT 10', [], function(err, result) {
       done();
-      callback(result.rows[0]);
+      callback({list: result.rows});
     });
   });
 }
 
 function insert(callback) {
   pool.connect(function(err, client, done) {
-    var data = uuid.v1();
-    client.query('INSERT INTO tst(txt) VALUES($1)', [data], function(err, result) {
-      done();
-      callback({txt: data});
-    });
-  });
+    var title = randStr(140);
+    var thumb = randStr(140);
+    var nc = randInt(1000);
+    var nv = randInt(5000);
+    client.query('INSERT INTO tst(title, thumb, nc, nv) VALUES($1, $2, $3, $4)', 
+        [title, thumb, nc, nv], 
+        function(err, result) {
+            done();
+            callback({title: title, thumb: thumb, nc: nc, nv: nv});
+        });
+   });
 }
 
 function update(callback) {
   pool.connect(function(err, client, done) {
-    var data = uuid.v1();
-    client.query('UPDATE tst SET txt=$1 WHERE id in (SELECT id FROM tst LIMIT 1)', [data], function(err, result) {
-      done();
-      callback({txt: data});
-    });
-  });
+    var title = randStr(140);
+    var thumb = randStr(140);
+    var nc = randInt(1000);
+    var nv = randInt(5000);
+    client.query('UPDATE tst SET title=$1, thumb=$2, nv=$3, nv=$4 WHERE id = $5', 
+        [title, thumb, nc, nv], 
+        function(err, result) {
+            done();
+            callback({title: title, thumb: thumb, nc: nc, nv: nv});
+        });
+   });
 }
 
 function response(resp, data) {
@@ -50,7 +69,7 @@ function response(resp, data) {
 }
 
 function handler(req, res) {
-  var coin = randint(0, 9);
+  var coin = randInt(9);
   if (coin < 8) {
     query(function(data) { response(res, data); });
   } else if (coin < 9) {

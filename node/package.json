@@ -4,7 +4,6 @@
     "main": "bench.js",
     "dependencies": {
         "pg": "6.1.0",
-        "pg-native": "1.10.0",
-        "node-uuid": "1.4.7"
+        "pg-native": "1.10.0"
     }
 }
