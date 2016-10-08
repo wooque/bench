@@ -23,12 +23,12 @@ class BenchEndpoint(RequestHandler):
     @inlineCallbacks
     def get(self):
         coin = randint(0, 9)
-        if coin < 8:
-            result = yield self.db.runQuery("SELECT * FROM tst LIMIT 10")
+        if coin < 6:
+            result = yield self.db.runQuery("SELECT title, thumb, nc, nv FROM tst ORDER BY id DESC LIMIT 10")
             data = result and [dict(title=r[0], thumb=r[1], nc=r[2], nv=r[3]) for r in result] or None
             resp = dict(list=data)
 
-        elif coin < 9:
+        elif coin < 8:
             title = randstr(140)
             thumb = randstr(140)
             nc = randint(0, 1000)
@@ -43,7 +43,7 @@ class BenchEndpoint(RequestHandler):
             nc = randint(0, 1000)
             nv = randint(0, 5000)
             yield self.db.runOperation("UPDATE tst SET title=%s, thumb=%s, nc=%s, nv=%s "
-                                       "FROM (SELECT id FROM tst ORDER BY RANDOM() LIMIT 1) as tmp WHERE tst.id=tmp.id",
+                                       "WHERE id=(SELECT max(id) as m FROM tst LIMIT 1)",
                                        (title, thumb, nc, nv,))
             resp = dict(action="update", title=title, thumb=thumb, nc=nc, nv=nv)
         

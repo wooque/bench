@@ -2,7 +2,6 @@ package org.wooque.bench;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.UUID;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -14,6 +13,17 @@ import io.vertx.ext.asyncsql.PostgreSQLClient;
 import io.vertx.ext.sql.SQLConnection;
 
 public class Bench extends AbstractVerticle {
+        
+    static private final String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    static private String randomString(int len){
+        StringBuilder sb = new StringBuilder(len);
+        for(int i = 0; i < len; i++) {
+            sb.append(Bench.chars.charAt(ThreadLocalRandom.current().nextInt(Bench.chars.length())));
+        }
+        return sb.toString();
+    }
+    
     private AsyncSQLClient db;
 
     @Override
@@ -27,39 +37,44 @@ public class Bench extends AbstractVerticle {
 
         vertx.createHttpServer().requestHandler(r -> db.getConnection(conn -> {
             final SQLConnection connection = conn.result();
-
             int coin = ThreadLocalRandom.current().nextInt(0, 10);
-            String data;
-            if (coin < 8) {
-                    connection.query("SELECT txt FROM tst LIMIT 1", rs -> {
-                        List rows = rs.result().getRows();
-                        String resp;
-                        if (rows.size() > 0) {
-                            resp = rows.get(0).toString();
-                        } else {
-                            resp = new JsonObject().put("txt", "").toString();
-                        }
-                        connection.close();
-                        r.response().end(resp);
-                    });
-
-            } else if (coin < 9) {
-                    data = UUID.randomUUID().toString();
-                    connection.updateWithParams("INSERT INTO tst(txt) VALUES (?)", new JsonArray().add(data), rs -> {
-                        rs.result();
-                        connection.close();
-                        String resp = new JsonObject().put("txt", data).toString();
-                        r.response().end(resp);
-                    });
-                
+            
+            if (coin < 6) {
+                connection.query("SELECT title, thumb, nc, nv FROM tst ORDER BY id DESC LIMIT 10", rs -> {
+                    List rows = rs.result().getRows();
+                    connection.close();
+                    String resp = new JsonObject().put("list", rows).toString();
+                    r.response().end(resp);
+                });
+            
+            } else if (coin < 8) {
+                String title = Bench.randomString(140);
+                String thumb = Bench.randomString(140);
+                int nc = ThreadLocalRandom.current().nextInt(0, 1000);
+                int nv = ThreadLocalRandom.current().nextInt(0, 5000);
+                JsonArray data = new JsonArray().add(title).add(thumb).add(nc).add(nv);
+                connection.updateWithParams("INSERT INTO tst(title, thumb, nc, nv) VALUES (?, ?, ?, ?)", data, rs -> {
+                    rs.result();
+                    connection.close();
+                    String resp = new JsonObject().put("action", "insert").put("title", title)
+                                                .put("thumb", thumb).put("nc", nc).put("nv", nv).toString();
+                    r.response().end(resp);
+                });
+            
             } else {
-                    data = UUID.randomUUID().toString();
-                    connection.updateWithParams("UPDATE tst SET txt=? WHERE id=(SELECT id FROM tst LIMIT 1)", new JsonArray().add(data), rs -> {
-                        rs.result();
-                        connection.close();
-                        String resp = new JsonObject().put("txt", data).toString();
-                        r.response().end(resp);
-                    });
+                String title = Bench.randomString(140);
+                String thumb = Bench.randomString(140);
+                int nc = ThreadLocalRandom.current().nextInt(0, 1000);
+                int nv = ThreadLocalRandom.current().nextInt(0, 5000);
+                JsonArray data = new JsonArray().add(title).add(thumb).add(nc).add(nv);
+                connection.updateWithParams("UPDATE tst SET title=?, thumb=?, nc=?, nv=? " + 
+                                            "WHERE id=(SELECT max(id) FROM tst LIMIT 1)", data, rs -> {
+                    rs.result();
+                    connection.close();
+                    String resp = new JsonObject().put("action", "update").put("title", title)
+                                                .put("thumb", thumb).put("nc", nc).put("nv", nv).toString();
+                    r.response().end(resp);
+                });
             }
         })).listen(8080);
     }

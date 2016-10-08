@@ -26,7 +26,7 @@ function randStr(length) {
 
 function query(callback) {
   pool.connect(function(err, client, done) {
-    client.query('SELECT * FROM tst LIMIT 10', [], function(err, result) {
+    client.query('SELECT * FROM tst ORDER BY id DESC LIMIT 10', [], function(err, result) {
       done();
       callback({list: result.rows});
     });
@@ -54,7 +54,7 @@ function update(callback) {
     var thumb = randStr(140);
     var nc = randInt(1000);
     var nv = randInt(5000);
-    client.query('UPDATE tst SET title=$1, thumb=$2, nc=$3, nv=$4 FROM (SELECT id FROM tst ORDER BY RANDOM() LIMIT 1) as tmp WHERE tst.id=tmp.id', 
+    client.query('UPDATE tst SET title=$1, thumb=$2, nc=$3, nv=$4 WHERE id=(SELECT max(id) FROM tst)', 
         [title, thumb, nc, nv], 
         function(err, result) {
             done();
@@ -70,9 +70,9 @@ function response(resp, data) {
 
 function handler(req, res) {
   var coin = randInt(9);
-  if (coin < 8) {
+  if (coin < 6) {
     query(function(data) { response(res, data); });
-  } else if (coin < 9) {
+  } else if (coin < 8) {
     insert(function(data) { response(res, data); });
   } else {
     update(function(data) { response(res, data); });
