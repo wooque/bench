@@ -1,11 +1,19 @@
 var http = require('http');
 var pg = require('pg').native;
+var cluster = require('cluster')
+
+if (cluster.isMaster) {
+    for (let i = 0; i < 2; i++) {
+        cluster.fork();
+    }
+    return;
+}
 
 var config = {
   user: 'bench',
   database: 'bench',
   password: 'bench',
-  max: 32,
+  max: 16,
 };
 
 var pool = new pg.Pool(config);

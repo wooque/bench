@@ -4,7 +4,7 @@ do_start() {
     NW=${NUM_WORKERS:=2}
 
     for i in $(seq ${NW}); do
-        virtualenv/bin/twistd --pidfile=/var/run/bench/bench${i}.pid cyclone -u /var/run/bench/bench${i}.sock bench.py
+        twistd --pidfile=/var/run/bench/bench${i}.pid cyclone -u /var/run/bench/bench${i}.sock bench.py
     done
     return 0
 }

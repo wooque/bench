@@ -1,8 +1,7 @@
 .idea
-virtualenv
-virtualenv3
+virtualenv*
 *.pyc
-.log
+*.log
 target
 .lein-repl-history
 go
